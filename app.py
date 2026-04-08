@@ -1,21 +1,30 @@
-from datetime import datetime, timedelta
+from flask import Flask, render_template
+import sqlite3
 
-# 1. La nostra lista di scadenze (per ora la scriviamo a mano)
-scadenze = [
-    {"titolo": "Revisione Ascensore", "data": "2024-05-20"},
-    {"titolo": "Rata Assicurazione", "data": "2024-06-15"},
-    {"titolo": "Manutenzione Caldaia", "data": "2024-05-10"}
-]
+app = Flask(__name__)
 
-oggi = datetime.now()
+# Funzione per connettersi al database
+def get_db_connection():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
-print("--- CONTROLLO SCADENZE IN CORSO ---")
-
-for item in scadenze:
-    data_scadenza = datetime.strptime(item["data"], "%Y-%m-%d")
-    giorni_mancanti = (data_scadenza - oggi).days
+@app.route('/')
+def dashboard():
+    # Simuliamo alcuni dati per la dashboard (in futuro verranno dal DB)
+    dati_riepilogo = {
+        "pratiche_urgenti": 3,
+        "morosita_totale": "4.500",
+        "assemblee_imminenti": 2
+    }
     
-    if 0 <= giorni_mancanti <= 15:
-        print(f"⚠️ AVVISO: '{item['titolo']}' scade tra {giorni_mancanti} giorni!")
-    elif giorni_mancanti < 0:
-        print(f"❌ SCADUTO: '{item['titolo']}' è scaduto da {-giorni_mancanti} giorni!")
+    scadenze = [
+        {"titolo": "Revisione Ascensore", "condominio": "Condominio Roma", "giorni": 3, "stato": "in-arrivo"},
+        {"titolo": "Rata Assicurazione", "condominio": "Condominio Milano", "giorni": 12, "stato": "in-arrivo"},
+        {"titolo": "Manutenzione Caldaia", "condominio": "Condominio Napoli", "giorni": -2, "stato": "scaduto"}
+    ]
+    
+    return render_template('index.html', riepilogo=dati_riepilogo, scadenze=scadenze)
+
+if __name__ == '__main__':
+    app.run(debug=True)
